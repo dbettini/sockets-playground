@@ -4,7 +4,7 @@
   "description": "Playground for a websocket based chat app with push notifications",
   "main": "index.js",
   "scripts": {
-    "start": "node --harmony index.js",
+    "start": "npm run build && node --harmony index.js",
     "build":"buble -i app -o public/dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

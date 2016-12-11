@@ -19,8 +19,20 @@ const http = app.listen(port, () => {
 });
 
 const io = socketio(http);
+const people = {};
 
 io.on("connection", socket => {
-    console.log("a user connected");
-    socket.on("disconnect", () => console.log("a user disconnected"));
-})
+    socket.on("join", name => {
+        people[socket.id] = name;
+        socket.emit("update", "You have connected to the server.");
+        io.emit("update", name + " has joined the server.");
+        io.emit("update-people", people);
+    });
+    socket.on("disconnect", () => {
+        io.emit("update", people[socket.id] + " has left the server.");
+        delete people[socket.id];
+        io.emit("update-people", people);
+    });
+    socket.on("send", (msg) => io.emit("send", people[socket.id], msg));
+});
+// maybe remove socket id entirely?

@@ -4,7 +4,11 @@
   "description": "Playground for a websocket based chat app with push notifications",
   "main": "index.js",
   "scripts": {
+    "start": "node --harmony index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "dbettini"
+  "author": "dbettini",
+  "dependencies": {
+    "express": "^4.14.0"
+  }
 }

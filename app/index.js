@@ -1,5 +1,1 @@
-class Test {
-    constructor(txt) {
-        console.log(txt);
-    }
-}
+const socket = io();

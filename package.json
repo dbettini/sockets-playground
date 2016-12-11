@@ -5,13 +5,14 @@
   "main": "index.js",
   "scripts": {
     "start": "npm run build && node --harmony index.js",
-    "build":"buble -i app -o public/dist",
+    "build": "buble -i app -o public/dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "dbettini",
   "dependencies": {
     "express": "^4.14.0",
-    "moniker": "^0.1.2"
+    "moniker": "^0.1.2",
+    "socket.io": "^1.7.2"
   },
   "devDependencies": {
     "buble": "^0.14.2"

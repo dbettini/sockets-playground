@@ -127,7 +127,7 @@ const ChatBox = Vue.component('chat-box', {
             <user-list></user-list>
             <message-list></message-list>
 
-            <div class="row"
+            <div class="row">
                 <div class="span5 offset2">
                     <form
                         class="form-inline"
@@ -145,6 +145,12 @@ const ChatBox = Vue.component('chat-box', {
                             value="Send"
                             class="btn btn-success"
                             @click="sendMessage">
+                        <input
+                            type="button"
+                            name="leave"
+                            value="Leave"
+                            class="btn btn-default"
+                            @click="leaveChat">
                     </form>
                 </div>
             </div>
@@ -162,6 +168,12 @@ const ChatBox = Vue.component('chat-box', {
 
             socket.emit("send", message);
             this.message = '';
+        },
+
+        leaveChat() {
+            socket.disconnect();
+            socket.connect();
+            this.$router.push({ path: '/join' });
         }
     }
 });

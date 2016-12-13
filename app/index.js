@@ -2,6 +2,16 @@ const socket = io();
 let nickname = '';
 
 const JoinForm = Vue.component('join-form', {
+    created() {
+        fetch('/name')
+            .then(resp => resp.json())
+            .then(({ name }) => {
+                this.name = name;
+                this.disabled = false;
+            })
+            .catch(_ => this.disabled = false);
+    },
+
     template: `
         <div class="container">
             <div class="row">
@@ -15,12 +25,14 @@ const JoinForm = Vue.component('join-form', {
                             class="input-small"
                             placeholder="Your name"
                             v-model="name"
+                            :disabled="disabled"
                             @keyup.enter="join">
                         <input
                             type="button"
                             class="btn btn-primary"
                             name="join"
                             value="Join"
+                            :disabled="disabled"
                             @click="join">
                     </form>
                 </div>
@@ -29,7 +41,10 @@ const JoinForm = Vue.component('join-form', {
     `,
 
     data() {
-        return { name: '' }
+        return {
+            name: '',
+            disabled: true
+        }
     },
 
     methods: {

@@ -1,11 +1,15 @@
 {
   "name": "sockets-playground",
   "version": "1.0.0",
+  "engines": {
+    "node": ">=7"
+  },
   "description": "Playground for a websocket based chat app with push notifications",
   "main": "index.js",
   "scripts": {
     "start": "npm run build && node --harmony index.js",
     "build": "buble -i app -o public/dist",
+    "watch": "watch 'npm run build' app",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "dbettini",
@@ -15,6 +19,7 @@
     "socket.io": "^1.7.2"
   },
   "devDependencies": {
-    "buble": "^0.14.2"
+    "buble": "^0.14.2",
+    "watch": "^1.0.1"
   }
 }

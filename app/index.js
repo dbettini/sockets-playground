@@ -1,78 +1,163 @@
-$(document).ready(() => {
-    const socket = io();
+const socket = io();
 
-    const $chat = $("#chat");
-    const $name = $("#name");
-    const $form = $("form");
-    const $login = $("#login");
-    const $msg = $("#msg");
-    const $join = $("#join");
-    const $msgs = $("#msgs");
-    const $people = $("#people");
-    const $send = $("#send");
+const JoinForm = Vue.component('join-form', {
+    template: `
+        <div class="container">
+            <div class="row">
+                <div class="span5 offset2">
+                    <form
+                        class="form-inline"
+                        @submit.prevent>
 
-    let ready = false;
+                        <input
+                            type="text"
+                            class="input-small"
+                            placeholder="Your name"
+                            v-model="name"
+                            @keyup.enter="join">
+                        <input
+                            type="button"
+                            class="btn btn-primary"
+                            name="join"
+                            value="Join"
+                            @click="join">
+                    </form>
+                </div>
+            </div>
+        </div>
+    `,
 
-    $chat.hide();
-    $name.focus();
-    $form.submit(event => event.preventDefault());
+    data() {
+        return { name: '' }
+    },
 
-    const join = () => {
-        var name = $name.val();
-        if (name != "") {
-            socket.emit("join", name);
-            $login.detach();
-            $chat.show();
-            $msg.focus();
-            ready = true;
+    methods: {
+        join() {
+            let name = this.name;
+            if (!name) return;
+
+            socket.emit('join', name);
+            this.$router.push({ path: '/chat' });
         }
-    };
+    }
+});
 
-    const appendMessage = (msg) => {
-        if (ready)
-            $msgs.append($("<li>").text(msg));
-    };
+Vue.component('user-list', {
+    created() {
+        socket.on('update-people', sessions => this.updateUsers(sessions));
+    },
 
-    const appendPeople = (people) => {
-        if (ready) {
-            $people.empty();
-            $.each(people, (clientId, name) => {
-                $people.append($("<li>").text(name));
+    template: `
+        <div class="row">
+            <div>People</div>
+		    <div class="span2">
+		    	<ul id="people">
+                    <li v-for="user in users">{{ user.nick }}</li>
+                </ul>
+		    </div>
+        </div>
+    `,
+
+    data() {
+        return { users: [] }
+    },
+
+    methods: {
+        updateUsers(sessions) {
+            this.users = Object.keys(sessions).map(sessionId => {
+                let nick = sessions[sessionId];
+                return { nick, sessionId };
             });
         }
     }
+});
 
-    const sendMessage = () => {
-        var msg = $msg.val();
-        socket.emit("send", msg);
-        $msg.val("");
-        $msg.focus();
-    };
+Vue.component('message-list', {
+    created() {
+        socket.on('update', msg => this.onSystemMessage(msg));
+        socket.on('send', (author, msg) => this.onMessage(author, msg));
+    },
 
-    $join.click(join);
+    template: `
+        <div class="row">
+            <div>Chat</div>
+            <div class="span4">
+                <ul id="messages">
+                    <li v-for="message in messages">{{ message }}</li>
+                </ul>
+            </div>
+        </div>
+    `,
 
-    $name.keypress((e) => {
-        if (e.which == 13)
-            join();
-    });
+    data() {
+        return { messages: [] }
+    },
 
-    socket.on("update", appendMessage);
+    methods: {
+        onSystemMessage(msg) {
+            this.messages.push(msg);
+        },
 
-    socket.on("update-people", appendPeople);
+        onMessage(author, msg) {
+            this.messages.push(`${ author } says: ${ msg }`);
+        }
+    }
+});
 
-    socket.on("send", (who, msg) => appendMessage(who + " says: " + msg));
+const ChatBox = Vue.component('chat-box', {
+    template: `
+        <div class="container">
+            <user-list></user-list>
+            <message-list></message-list>
 
-    socket.on("disconnect", () => {
-        appendMessage("The server is not available");
-        $msgs.attr("disabled", "disabled");
-        $send.attr("disabled", "disabled");
-    });
+            <div class="row"
+                <div class="span5 offset2">
+                    <form
+                        class="form-inline"
+                        @submit.prevent>
 
-    $send.click(sendMessage);
+                        <input
+                            type="text"
+                            class="input"
+                            placeholder="Your message"
+                            v-model="message"
+                            @keyup.enter="sendMessage">
+                        <input
+                            type="button"
+                            name="send"
+                            value="Send"
+                            class="btn btn-success"
+                            @click="sendMessage">
+                    </form>
+                </div>
+            </div>
+        </div>
+    `,
 
-    $msg.keypress((e) => {
-        if (e.which == 13)
-            sendMessage();
-    });
+    data() {
+        return { message: '' }
+    },
 
+    methods: {
+        sendMessage() {
+            let message = this.message;
+            if (!message) return;
+
+            socket.emit("send", message);
+            this.message = '';
+        }
+    }
+});
+
+const router = new VueRouter({
+  routes: [
+    { path: '/join', component: JoinForm },
+    { path: '/chat', component: ChatBox },
+    { path: '/*', redirect: '/join' }
+  ]
+});
+
+new Vue({
+    router,
+    el: '#app'
 });

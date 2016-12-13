@@ -1,4 +1,5 @@
 const socket = io();
+let nickname = '';
 
 const JoinForm = Vue.component('join-form', {
     template: `
@@ -36,6 +37,7 @@ const JoinForm = Vue.component('join-form', {
             let name = this.name;
             if (!name) return;
 
+            nickname = name;
             socket.emit('join', name);
             this.$router.push({ path: '/chat' });
         }
@@ -152,7 +154,14 @@ const ChatBox = Vue.component('chat-box', {
 const router = new VueRouter({
   routes: [
     { path: '/join', component: JoinForm },
-    { path: '/chat', component: ChatBox },
+    {
+        path: '/chat',
+        component: ChatBox,
+        beforeEnter: (from, to, next) => {
+            if (!nickname) next({ path: '/join' });
+            next();
+        }
+    },
     { path: '/*', redirect: '/join' }
   ]
 });

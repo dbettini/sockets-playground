@@ -1,4 +1,4 @@
-const socket = io();
+let socket = null;
 let nickname = '';
 
 const JoinForm = Vue.component('join-form', {
@@ -54,7 +54,10 @@ const JoinForm = Vue.component('join-form', {
             if (!name) return;
 
             nickname = name;
+
+            socket = io();
             socket.emit('join', name);
+
             this.$router.push({ path: '/chat' });
         }
     }

@@ -2,39 +2,17 @@
 <html>
 <head>
 	<title>Sockets Playground</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css">
 </head>
 <body>
-	<div class="container">
-		<div class="row">
-			<div>People</div>
-			<div class="span2">
-				<ul id="people"></ul>
-			</div>
-			<div>Chat</div>
-			<div class="span4">
-				<ul id="msgs"></ul>
-			</div>
-		</div>
-		<div class="row">
-			<div class="span5 offset2" id="login">
-				<form class="form-inline">
-					<input type="text" class="input-small" placeholder="Your name" id="name">
-					<input type="button" name="join" id="join" value="Join" class="btn btn-primary">
-				</form>
-			</div>
-
-			<div class="span5 offset2" id="chat">
-				<form id="2" class="form-inline">
-					<input type="text" class="input" placeholder="Your message" id="msg">
-					<input type="button" name="send" id="send" value="Send" class="btn btn-success">
-				</form>
-			</div>
-		</div>
-	</div>
+	<div id="app">
+        <router-view></router-view>
+    </div>
 	<script src="/socket.io/socket.io.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.1/fetch.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.1.6/vue.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/vue-router/2.1.1/vue-router.js"></script>
 	<script src="dist/index.js"></script>
 </body>
 </html>

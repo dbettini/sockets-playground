@@ -26,6 +26,7 @@ const JoinForm = Vue.component('join-form', {
                             placeholder="Your name"
                             v-model="name"
                             :disabled="disabled"
+                            @click="$event.target.select()"
                             @keyup.enter="join">
                         <input
                             type="button"

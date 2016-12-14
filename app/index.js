@@ -53,11 +53,7 @@ const JoinForm = Vue.component('join-form', {
             let name = this.name;
             if (!name) return;
 
-            nickname = name;
-
-            socket = io();
-            socket.emit('join', name);
-
+            localStorage.setItem('nickname', name);
             this.$router.push({ path: '/chat' });
         }
     }
@@ -203,8 +199,12 @@ const ChatBox = Vue.component('chat-box', {
         },
 
         leaveChat() {
+            localStorage.removeItem('nickname');
+            nickname = null;
+
             socket.disconnect();
             socket = null;
+
             this.$router.push({ path: '/join' });
         }
     }
@@ -212,12 +212,31 @@ const ChatBox = Vue.component('chat-box', {
 
 const router = new VueRouter({
   routes: [
-    { path: '/join', component: JoinForm },
+    {
+        path: '/join',
+        component: JoinForm,
+        beforeEnter: (from, to, next) => {
+            nickname = localStorage.getItem('nickname');
+            if (nickname) {
+                next({ path: '/chat' });
+                return;
+            }
+
+            next();
+        }
+    },
     {
         path: '/chat',
         component: ChatBox,
         beforeEnter: (from, to, next) => {
-            if (!nickname) next({ path: '/join' });
+            nickname = localStorage.getItem('nickname');
+            if (!nickname) {
+                next({ path: '/join' });
+                return;
+            }
+
+            socket = io();
+            socket.emit('join', nickname);
             next();
         }
     },

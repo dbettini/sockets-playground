@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "start": "npm run build && node --harmony index.js",
-    "build": "buble -i app -o public/dist && cp app/manifest.json public/dist/manifest.json",
+    "build": "buble -i app -o public/dist",
     "watch": "watch 'npm run build' app",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

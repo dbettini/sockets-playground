@@ -1,39 +1,36 @@
-// push notifications
+function setupPushNotifications() {
+    return navigator.serviceWorker.register("dist/serviceWorker.js")
+        .then(registration => {
+            return registration.pushManager.getSubscription()
+                .then(subscription => {
+                    if (subscription)
+                        return subscription;
+                    return registration.pushManager.subscribe({ userVisibleOnly: true });
+                });
+        })
+        .then(subscription => {
+            let rawKey = subscription.getKey ? subscription.getKey('p256dh') : '';
+            let key = rawKey ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawKey))) : '';
+            let rawAuthSecret = subscription.getKey ? subscription.getKey('auth') : '';
+            let authSecret = rawAuthSecret ?
+                btoa(String.fromCharCode.apply(null, new Uint8Array(rawAuthSecret))) : '';
 
-let endpoint;
-let key;
-let authSecret;
+            let endpoint = subscription.endpoint;
 
-navigator.serviceWorker.register("dist/serviceWorker.js")
-    .then(registration => {
-        return registration.pushManager.getSubscription()
-            .then(subscription => {
-                if (subscription)
-                    return subscription;
-                return registration.pushManager.subscribe({ userVisibleOnly: true });
-            });
-    })
-    .then(subscription => {
-        let rawKey = subscription.getKey ? subscription.getKey('p256dh') : '';
-        key = rawKey ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawKey))) : '';
-        let rawAuthSecret = subscription.getKey ? subscription.getKey('auth') : '';
-        authSecret = rawAuthSecret ?
-            btoa(String.fromCharCode.apply(null, new Uint8Array(rawAuthSecret))) : '';
-
-        endpoint = subscription.endpoint;
-
-        // fetch("/register", {
-        //     method: 'post',
-        //     headers: {
-        //         'Content-type': 'application/json'
-        //     },
-        //     body: JSON.stringify({
-        //         endpoint: subscription.endpoint,
-        //         key: key,
-        //         authSecret: authSecret,
-        //     })
-        // });
-    });
+            return { key, endpoint, authSecret };
+            // fetch("/register", {
+            //     method: 'post',
+            //     headers: {
+            //         'Content-type': 'application/json'
+            //     },
+            //     body: JSON.stringify({
+            //         endpoint: subscription.endpoint,
+            //         key: key,
+            //         authSecret: authSecret,
+            //     })
+            // });
+        });
+}
 
 // vue app
 
@@ -274,14 +271,18 @@ const router = new VueRouter({
                     return;
                 }
 
-                socket = io();
-                socket.emit('join', JSON.stringify({
-                    name: nickname,
-                    endpoint,
-                    key,
-                    authSecret
-                }));
-                next();
+                setupPushNotifications()
+                    .then(({ endpoint, key, authSecret }) => {
+                        socket = io();
+                        socket.emit('join', JSON.stringify({
+                            name: nickname,
+                            endpoint,
+                            key,
+                            authSecret
+                        }));
+                        next();
+                    })
+                    .catch(_ => next({ path: '/join' }));
             }
         },
         { path: '/*', redirect: '/join' }

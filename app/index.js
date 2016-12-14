@@ -108,7 +108,9 @@ Vue.component('message-list', {
             <div>Chat</div>
             <div class="span4">
                 <ul id="messages">
-                    <li v-for="message in messages" class="message" :class="message.type">
+                    <li v-for="message in messages" class="message"
+                        :class="[ message.type, { own: isOwnMessage(message) }]">
+
                         <span class="timestamp">{{ timestamp }}</span>
                         <span v-show="message.author" class="author">#{{ message.author }}: </span>
                         <span class="contents">{{ message.contents }}</span>
@@ -129,6 +131,10 @@ Vue.component('message-list', {
     },
 
     methods: {
+        isOwnMessage(message) {
+            return message.author === nickname;
+        },
+
         onSystemMessage(contents) {
             this.messages.push({
                 type: 'system',

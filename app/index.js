@@ -198,7 +198,7 @@ const ChatBox = Vue.component('chat-box', {
 
         leaveChat() {
             socket.disconnect();
-            socket.connect();
+            socket = null;
             this.$router.push({ path: '/join' });
         }
     }

@@ -17,6 +17,7 @@
     "express": "^4.14.0",
     "moniker": "^0.1.2",
     "socket.io": "^1.7.2",
+    "web-push": "^3.2.1",
     "buble": "^0.14.2"
   },
   "devDependencies": {

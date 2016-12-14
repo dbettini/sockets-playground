@@ -1,6 +1,5 @@
-// push notifications
 
-let getPushNotificationConfig = () => {
+function getPushNotificationConfig() {
     return navigator.serviceWorker.register("dist/serviceWorker.js")
         .then(registration => {
             return registration.pushManager.getSubscription()
@@ -261,9 +260,9 @@ const router = new VueRouter({
                     return;
                 }
 
-                socket = io();
                 getPushNotificationConfig()
-                    .then(({endpoint, key, authSecret}) => {
+                    .then(({ endpoint, key, authSecret }) => {
+                        socket = io();
                         socket.emit('join', JSON.stringify({
                             name: nickname,
                             endpoint,
@@ -271,7 +270,8 @@ const router = new VueRouter({
                             authSecret
                         }));
                         next();
-                    });
+                    })
+                    .catch(_ => next({ path: '/join' }));
             }
         },
         { path: '/*', redirect: '/join' }

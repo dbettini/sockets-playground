@@ -1,0 +1,31 @@
+#people {
+    list-style: none;
+}
+
+#people .me {
+    font-weight: bold;
+}
+
+#people .me::before {
+    display: inline-block;
+    content: "*";
+}
+
+#messages {
+    list-style: none;
+}
+
+.message .contents {
+    padding: 2px 4px;
+}
+
+.message.system .contents {
+    font-style: italic;
+    background: #808080;
+    color: #fff;
+    font-size: .875em;
+}
+
+.message .author {
+    font-weight: bold;
+}

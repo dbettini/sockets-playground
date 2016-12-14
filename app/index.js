@@ -73,7 +73,7 @@ Vue.component('user-list', {
             <div>People</div>
 		    <div class="span2">
 		    	<ul id="people">
-                    <li v-for="user in users">{{ user.nick }}</li>
+                    <li v-for="user in users" :class="{ me: isMe(user) }">{{ user.nick }}</li>
                 </ul>
 		    </div>
         </div>
@@ -84,6 +84,10 @@ Vue.component('user-list', {
     },
 
     methods: {
+        isMe(user) {
+            return user.nick === nickname;
+        },
+
         updateUsers(sessions) {
             this.users = Object.keys(sessions).map(sessionId => {
                 let nick = sessions[sessionId];
@@ -104,7 +108,11 @@ Vue.component('message-list', {
             <div>Chat</div>
             <div class="span4">
                 <ul id="messages">
-                    <li v-for="message in messages">{{ message }}</li>
+                    <li v-for="message in messages" class="message" :class="message.type">
+                        <span class="timestamp">{{ timestamp }}</span>
+                        <span v-show="message.author" class="author">#{{ message.author }}: </span>
+                        <span class="contents">{{ message.contents }}</span>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -114,13 +122,25 @@ Vue.component('message-list', {
         return { messages: [] }
     },
 
+    computed: {
+        timestamp() {
+            return fecha.format(new Date(), "shortTime");
+        }
+    },
+
     methods: {
-        onSystemMessage(msg) {
-            this.messages.push(msg);
+        onSystemMessage(contents) {
+            this.messages.push({
+                type: 'system',
+                contents
+            });
         },
 
-        onMessage(author, msg) {
-            this.messages.push(`${ author } says: ${ msg }`);
+        onMessage(author, contents) {
+            this.messages.push({
+                type: 'user',
+                author, contents
+            });
         }
     }
 });
@@ -141,6 +161,7 @@ const ChatBox = Vue.component('chat-box', {
                             type="text"
                             class="input"
                             placeholder="Your message"
+                            ref="message"
                             v-model="message"
                             @keyup.enter="sendMessage">
                         <input
@@ -172,6 +193,7 @@ const ChatBox = Vue.component('chat-box', {
 
             socket.emit("send", message);
             this.message = '';
+            this.$refs.message.focus();
         },
 
         leaveChat() {

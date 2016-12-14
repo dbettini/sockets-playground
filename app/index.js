@@ -1,9 +1,48 @@
+// push notifications
+
+let endpoint;
+let key;
+let authSecret;
+
+navigator.serviceWorker.register("dist/serviceWorker.js")
+    .then(registration => {
+        return registration.pushManager.getSubscription()
+            .then(subscription => {
+                if (subscription)
+                    return subscription;
+                return registration.pushManager.subscribe({ userVisibleOnly: true });
+            });
+    })
+    .then(subscription => {
+        let rawKey = subscription.getKey ? subscription.getKey('p256dh') : '';
+        key = rawKey ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawKey))) : '';
+        let rawAuthSecret = subscription.getKey ? subscription.getKey('auth') : '';
+        authSecret = rawAuthSecret ?
+            btoa(String.fromCharCode.apply(null, new Uint8Array(rawAuthSecret))) : '';
+
+        endpoint = subscription.endpoint;
+
+        // fetch("/register", {
+        //     method: 'post',
+        //     headers: {
+        //         'Content-type': 'application/json'
+        //     },
+        //     body: JSON.stringify({
+        //         endpoint: subscription.endpoint,
+        //         key: key,
+        //         authSecret: authSecret,
+        //     })
+        // });
+    });
+
+// vue app
+
 let socket = null;
 let nickname = '';
 
 const JoinForm = Vue.component('join-form', {
     created() {
-        fetch('/name')
+        fetch('/api/name')
             .then(resp => resp.json())
             .then(({ name }) => {
                 this.name = name;
@@ -211,37 +250,42 @@ const ChatBox = Vue.component('chat-box', {
 });
 
 const router = new VueRouter({
-  routes: [
-    {
-        path: '/join',
-        component: JoinForm,
-        beforeEnter: (from, to, next) => {
-            nickname = localStorage.getItem('nickname');
-            if (nickname) {
-                next({ path: '/chat' });
-                return;
-            }
+    routes: [
+        {
+            path: '/join',
+            component: JoinForm,
+            beforeEnter: (from, to, next) => {
+                nickname = localStorage.getItem('nickname');
+                if (nickname) {
+                    next({ path: '/chat' });
+                    return;
+                }
 
-            next();
-        }
-    },
-    {
-        path: '/chat',
-        component: ChatBox,
-        beforeEnter: (from, to, next) => {
-            nickname = localStorage.getItem('nickname');
-            if (!nickname) {
-                next({ path: '/join' });
-                return;
+                next();
             }
+        },
+        {
+            path: '/chat',
+            component: ChatBox,
+            beforeEnter: (from, to, next) => {
+                nickname = localStorage.getItem('nickname');
+                if (!nickname) {
+                    next({ path: '/join' });
+                    return;
+                }
 
-            socket = io();
-            socket.emit('join', nickname);
-            next();
-        }
-    },
-    { path: '/*', redirect: '/join' }
-  ]
+                socket = io();
+                socket.emit('join', JSON.stringify({
+                    name: nickname,
+                    endpoint,
+                    key,
+                    authSecret
+                }));
+                next();
+            }
+        },
+        { path: '/*', redirect: '/join' }
+    ]
 });
 
 new Vue({

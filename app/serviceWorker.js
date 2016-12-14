@@ -1,4 +1,3 @@
-debugger
 self.addEventListener("push", event => {
     let payload = event.data ? event.data.json() : {};
 

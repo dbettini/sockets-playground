@@ -29,3 +29,7 @@
 .message .author {
     font-weight: bold;
 }
+
+.message.own .author {
+    color: #a94442;
+}

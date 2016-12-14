@@ -7,7 +7,7 @@ const socketio = require("socket.io");
 
 app.use(express.static("public"));
 
-app.get("/name", (req, res) => {
+app.get("/api/name", (req, res) => {
     res.send({ name: moniker.choose() });
 });
 app.get("*", (req, res) => {
@@ -22,7 +22,9 @@ const io = socketio(http);
 const people = {};
 
 io.on("connection", socket => {
-    socket.on("join", name => {
+    socket.on("join", (data) => {
+        let {name, endpoint, authSecret, key} = JSON.parse(data);
+        console.log(name, endpoint, authSecret, key);
         people[socket.id] = name;
         socket.emit("update", "You have connected to the server.");
         io.emit("update", name + " has joined the server.");
@@ -35,4 +37,3 @@ io.on("connection", socket => {
     });
     socket.on("send", (msg) => io.emit("send", people[socket.id], msg));
 });
-// maybe remove socket id entirely?

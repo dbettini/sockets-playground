@@ -225,8 +225,12 @@ const ChatBox = Vue.component('chat-box', {
         },
 
         leaveChat() {
+            let name = localStorage.getItem('nickname');
+
             localStorage.removeItem('nickname');
             nickname = null;
+
+            socket.emit("leave", name);
 
             socket.disconnect();
             socket = null;
@@ -271,7 +275,8 @@ const router = new VueRouter({
                             authSecret
                         }));
                         next();
-                    });
+                    })
+                    .catch(_ => next({ path: '/join' }))
             }
         },
         { path: '/*', redirect: '/join' }

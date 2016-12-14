@@ -4,6 +4,8 @@ const port = 3000;
 const path = require("path");
 const moniker = require("moniker");
 const socketio = require("socket.io");
+const _ = require("lodash");
+const webPush = require("./webPush");
 
 app.use(express.static("public"));
 
@@ -20,11 +22,12 @@ const http = app.listen(port, () => {
 
 const io = socketio(http);
 const people = {};
+const pushConfigs = {};
 
 io.on("connection", socket => {
     socket.on("join", (data) => {
         let {name, endpoint, authSecret, key} = JSON.parse(data);
-        console.log(name, endpoint, authSecret, key);
+        pushConfigs[endpoint] = { name, authSecret, key };
         people[socket.id] = name;
         socket.emit("update", "You have connected to the server.");
         io.emit("update", name + " has joined the server.");
@@ -35,5 +38,22 @@ io.on("connection", socket => {
         delete people[socket.id];
         io.emit("update-people", people);
     });
-    socket.on("send", (msg) => io.emit("send", people[socket.id], msg));
+    socket.on("send", (msg) => {
+        io.emit("send", people[socket.id], msg);
+        const endpoint = _.findKey(pushConfigs,
+            config => config.name == people[socket.id]);
+        const {name, key, authSecret} = pushConfigs[endpoint];
+        console.log(name, endpoint, key, authSecret)
+        webPush.sendNotification(endpoint,
+            {
+                TTL: 0,
+                payload: msg,
+                userPublicKey: key,
+                userAuth: authSecret,
+                delay: 0
+            });
+    });
+    socket.on("leave", (name) => {
+        _.remove(pushConfigs, config => config.name == name)
+    })
 });

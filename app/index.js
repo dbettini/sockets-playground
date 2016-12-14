@@ -93,6 +93,18 @@ Vue.component('user-list', {
     }
 });
 
+Vue.component('message-timestamp', {
+    template: `
+        <span v-once class="timestamp">{{ timestamp() }}</span>
+    `,
+
+    methods: {
+        timestamp() {
+            return fecha.format(new Date(), "mediumTime");
+        }
+    }
+});
+
 Vue.component('message-list', {
     created() {
         socket.on('update', msg => this.onSystemMessage(msg));
@@ -107,7 +119,7 @@ Vue.component('message-list', {
                     <li v-for="message in messages" class="message"
                         :class="[ message.type, { own: isOwnMessage(message) }]">
 
-                        <span class="timestamp">{{ timestamp }}</span>
+                        <message-timestamp></message-timestamp>
                         <span v-show="message.author" class="author">#{{ message.author }}: </span>
                         <span class="contents">{{ message.contents }}</span>
                     </li>
@@ -118,12 +130,6 @@ Vue.component('message-list', {
 
     data() {
         return { messages: [] }
-    },
-
-    computed: {
-        timestamp() {
-            return fecha.format(new Date(), "shortTime");
-        }
     },
 
     methods: {
